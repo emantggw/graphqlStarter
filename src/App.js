@@ -1,25 +1,30 @@
 import logo from './logo.svg';
 import './App.css';
 
+import {ApolloClient, InMemoryCache, ApolloProvider, HttpLink, from} from "@apollo/client";
+import {onError} from "@apollo/client/link/error";
+import Categories from './Components/GetCategories';
+
+
+const errorLink = onError(({graphqlErrors, networkError})=>{
+  if(graphqlErrors){
+    graphqlErrors.map(({message, location, path})=>{
+      console.log(`Grahpql error ${message}`)
+    })
+  }
+})
+const link = from([
+  errorLink,
+  new HttpLink({uri: "http://localhost:6001/graphql"})
+])
+const client = new ApolloClient({
+  cache: new InMemoryCache(),
+  link: link
+})
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  return <ApolloProvider client={client}>
+    <Categories/>
+  </ApolloProvider>
 }
 
 export default App;
